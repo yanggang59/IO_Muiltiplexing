@@ -6,12 +6,14 @@
 #include <sys/wait.h>
 #include <string.h>
 
+#define BUFFER_SIZE 256
+
 int main() {
     int fd[2];
     fd_set set;
     struct timeval timeout;
-    char buf[256];
-    int nbytes;
+    char buffer[BUFFER_SIZE];
+    int num_w_bytes, num_r_bytes; 
 
     if (pipe(fd) == -1) {
         perror("pipe");
@@ -27,10 +29,17 @@ int main() {
     if (pid == 0) {
         // child process
         close(fd[0]); // close unused read end
-        char *msg = "Hello, parent process!";
-        write(fd[1], msg, strlen(msg));
+        printf("Enter text to send: ");
+        fgets(buffer, BUFFER_SIZE, stdin);
+        num_w_bytes = strlen(buffer);
+
+        if (write(fd[1], buffer, num_w_bytes) == -1) {
+            perror("write");
+            exit(EXIT_FAILURE);
+        }
+
         close(fd[1]);
-        exit(0);
+        exit(EXIT_SUCCESS);
     } else {
         // parent process
         close(fd[1]); // close unused write end
@@ -47,8 +56,8 @@ int main() {
             exit(0);
         } else {
             if (FD_ISSET(fd[0], &set)) {
-                nbytes = read(fd[0], buf, sizeof(buf));
-                printf("Received message from child process: %s\n", buf);
+                num_r_bytes = read(fd[0], buffer, sizeof(buffer));
+                printf("Received message from child process: %s\n", buffer);
             }
         }
         wait(NULL); // wait for child process to finish
