@@ -8,7 +8,7 @@ ${TARGET}:
 	${CROSS}gcc ${SRC} -o $@
 
 copy:
-	cp ${TARGET} /home/thomas/Test/runninglinuxkernel_5.0/kmodules
+	cp ${TARGET} ../../../Test/runninglinuxkernel_5.0/kmodules
 
 clean:
 	rm ${TARGET}
